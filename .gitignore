@@ -6,3 +6,7 @@
 
 # Output
 target/
+
+# Spring Boot
+application-dev.yml
+application-prod.yml
