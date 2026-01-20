@@ -1,64 +1,54 @@
 package com.nativc.funflow;
 
-import com.nativc.funflow.common.Code;
-import com.nativc.funflow.common.Result;
-import com.nativc.funflow.exception.BusinessException;
-import com.nativc.funflow.exception.GlobalExceptionHandler;
-import jakarta.servlet.http.HttpServletRequest;
-import org.junit.jupiter.api.BeforeEach;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nativc.funflow.dto.request.SendEmailCodeRequest;
+import com.nativc.funflow.service.AuthService;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 /**
  * 异常类单元测试
  * 测试业务异常和系统异常的各种场景
  */
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 class ExceptionTests {
 
-    @Mock
-    private HttpServletRequest request;
+    @Autowired
+    private AuthService authService;
 
-    private GlobalExceptionHandler exceptionHandler;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @BeforeEach
-    void setUp() {
-        exceptionHandler = new GlobalExceptionHandler();
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Test
+    void testMethodArgumentNotValidException() throws Exception {
+        SendEmailCodeRequest request = new SendEmailCodeRequest();
+        request.setEmail(""); // 空邮箱，违反 @NotBlank 约束
+        request.setCaptchaId("test-id");
+        request.setCaptchaText("1234");
+        
+        mockMvc.perform(post("/api/auth/send-email-code")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodArgumentNotValidException));
     }
 
     @Test
-    void testHandleBusinessException() {
-        // Given
-        BusinessException exception = new BusinessException(40001, "用户不存在");
-        when(request.getRequestURI()).thenReturn("/api/user/123");
-
-        // When
-        Result<Void> result = exceptionHandler.handleBusinessException(exception, request);
-
-        // Then
-        assertEquals(Code.BUSINESS_ERROR, result.getCode());
-        assertEquals("用户不存在", result.getMessage());
-        assertNull(result.getData());
-    }
-
-    @Test
-    void testHandleSystemExceptionInDevEnvironment() {
-        // Given
-        ReflectionTestUtils.setField(exceptionHandler, "activeProfile", "dev");
-        Exception exception = new NullPointerException("空指针异常");
-        when(request.getRequestURI()).thenReturn("/api/test");
-
-        // When
-        Result<Void> result = exceptionHandler.handleException(exception, request);
-
-        // Then
-        assertEquals(Code.SYSTEM_ERROR, result.getCode());
-        assertEquals("空指针异常", result.getMessage());
+    void testConstraintViolationException() {
+        SendEmailCodeRequest request = new SendEmailCodeRequest();
+        request.setEmail("adminqq.com");
+        assertThrows(ConstraintViolationException.class, () -> authService.sendEmailCode(request));
     }
 }
