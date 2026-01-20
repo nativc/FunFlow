@@ -1,5 +1,6 @@
 package com.nativc.funflow.service;
 
+import com.nativc.funflow.dto.request.RegisterRequest;
 import com.nativc.funflow.dto.request.SendEmailCodeRequest;
 import com.nativc.funflow.dto.response.CaptchaResponse;
 import jakarta.validation.Valid;
@@ -13,5 +14,17 @@ public interface AuthService {
      */
     CaptchaResponse generateCaptcha();
 
+    /**
+     * 发送邮箱验证码
+     *
+     * @param request 发送邮箱验证码请求
+     */
     void sendEmailCode(@Valid SendEmailCodeRequest request);
+
+    /**
+     * 用户注册
+     *
+     * @param request 注册请求
+     */
+    void register(@Valid RegisterRequest request);
 }

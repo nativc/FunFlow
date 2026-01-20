@@ -26,6 +26,16 @@ public class RedisConstant {
     public static final long EMAIL_CODE_EXPIRE_SECONDS = 300; // 5分钟
 
     /**
+     * 用户注册锁 Key 前缀
+     */
+    public static final String REGISTER_LOCK_KEY_PREFIX = "register_lock:";
+
+    /**
+     * 用户注册锁过期时间（秒）
+     */
+    public static final long REGISTER_LOCK_EXPIRE_SECONDS = 10; // 10秒
+
+    /**
      * 生成图形验证码的 Redis Key
      *
      * @param captchaId 验证码ID
@@ -43,5 +53,15 @@ public class RedisConstant {
      */
     public static String getEmailCodeKey(String email) {
         return EMAIL_CODE_KEY_PREFIX + email.toLowerCase();
+    }
+
+    /**
+     * 生成用户注册锁的 Redis Key
+     *
+     * @param email 邮箱地址
+     * @return Redis Key
+     */
+    public static String getRegisterLockKey(String email) {
+        return REGISTER_LOCK_KEY_PREFIX + email.toLowerCase();
     }
 }

@@ -3,6 +3,7 @@ package com.nativc.funflow.controller;
 
 import com.nativc.funflow.common.Code;
 import com.nativc.funflow.common.Result;
+import com.nativc.funflow.dto.request.RegisterRequest;
 import com.nativc.funflow.dto.request.SendEmailCodeRequest;
 import com.nativc.funflow.dto.response.CaptchaResponse;
 import com.nativc.funflow.service.AuthService;
@@ -44,5 +45,17 @@ public class AuthController {
         // authService.sendEmailCode(request);
         // return Result.success();
         return Result.error(Code.SERVICE_UNAVAILABLE, "服务暂时不可用，请稍后重试！");
+    }
+
+    /**
+     * 用户注册
+     *
+     * @param request 注册请求
+     * @return 结果
+     */
+    @PostMapping("/register")
+    public Result<Void> register(@Valid @RequestBody RegisterRequest request) {
+        authService.register(request);
+        return Result.success();
     }
 }

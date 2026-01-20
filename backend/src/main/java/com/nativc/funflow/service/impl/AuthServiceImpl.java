@@ -2,10 +2,14 @@ package com.nativc.funflow.service.impl;
 
 
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.crypto.digest.BCrypt;
 import com.google.code.kaptcha.impl.DefaultKaptcha;
+import com.nativc.funflow.common.Code;
 import com.nativc.funflow.common.RedisConstant;
+import com.nativc.funflow.dto.request.RegisterRequest;
 import com.nativc.funflow.dto.request.SendEmailCodeRequest;
 import com.nativc.funflow.dto.response.CaptchaResponse;
+import com.nativc.funflow.entity.User;
 import com.nativc.funflow.exception.BusinessException;
 import com.nativc.funflow.mapper.UserMapper;
 import com.nativc.funflow.service.AuthService;
@@ -143,5 +147,93 @@ public class AuthServiceImpl implements AuthService {
         if (count > 0) {
             throw new BusinessException("该邮箱已被注册");
         }
+    }
+
+    @Override
+    public void register(RegisterRequest request) {
+        String email = request.getEmail().toLowerCase();
+        String emailCode = request.getEmailCode();
+        String password = request.getPassword();
+
+        // 验证邮箱验证码
+        validateEmailCode(email, emailCode);
+
+        // 获取注册分布式锁，防止同一邮箱并发注册
+        String lockKey = RedisConstant.getRegisterLockKey(email);
+        Boolean lockAcquired = stringRedisTemplate.opsForValue().setIfAbsent(
+                lockKey,
+                "1",
+                RedisConstant.REGISTER_LOCK_EXPIRE_SECONDS,
+                TimeUnit.SECONDS
+        );
+        if (Boolean.FALSE.equals(lockAcquired)) {
+            throw new BusinessException("该邮箱正在注册中，请稍后重试");
+        }
+
+        try {
+            // 再次校验邮箱是否已被注册（防止数据竞争）
+            validateEmailNotRegistered(email);
+            // 创建用户，完成注册
+            createUser(email, password);
+        } finally {
+            // 释放锁
+            stringRedisTemplate.delete(lockKey);
+        }
+    }
+
+    /**
+     * 校验邮箱验证码
+     *
+     * @param email     邮箱地址（小写）
+     * @param emailCode 用户输入的邮箱验证码
+     */
+    private void validateEmailCode(String email, String emailCode) {
+        String redisKey = RedisConstant.getEmailCodeKey(email);
+        String correctEmailCode = stringRedisTemplate.opsForValue().get(redisKey);
+
+        // 验证码不存在或已过期
+        if (correctEmailCode == null) {
+            throw new BusinessException("邮箱验证码已过期，请重新获取");
+        }
+        // 验证码错误
+        if (!correctEmailCode.equals(emailCode)) {
+            throw new BusinessException("邮箱验证码错误，请重新输入");
+        }
+
+        // 验证成功后删除验证码（一次性使用）
+        stringRedisTemplate.delete(redisKey);
+    }
+
+    /**
+     * 创建用户并保存到数据库
+     *
+     * @param email    邮箱地址
+     * @param password 明文密码
+     */
+    private void createUser(String email, String password) {
+        User user = new User();
+        user.setEmail(email);
+        user.setPasswordHash(BCrypt.hashpw(password)); // 密码加密
+        user.setUsername(email); // 用户名默认使用邮箱
+        user.setNickname(extractNameFromEmail(email)); // 昵称从邮箱中提取
+        user.setStatus(User.Status.NORMAL.getCode());
+
+        userMapper.insert(user);
+        log.info("用户注册成功，邮箱: {}", email);
+    }
+
+    /**
+     * 从邮箱中提取昵称
+     * 例如：user@example.com -> user
+     *
+     * @param email 邮箱地址
+     * @return 昵称
+     */
+    private String extractNameFromEmail(String email) {
+        int atIndex = email.indexOf('@');
+        if (atIndex > 0) {
+            return email.substring(0, atIndex);
+        }
+        throw new BusinessException(Code.ERROR, "邮箱格式不正确");
     }
 }
