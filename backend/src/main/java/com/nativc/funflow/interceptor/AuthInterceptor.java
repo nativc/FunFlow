@@ -1,0 +1,56 @@
+package com.nativc.funflow.interceptor;
+
+import com.nativc.funflow.common.UserContext;
+import com.nativc.funflow.exception.BusinessException;
+import com.nativc.funflow.util.JWTUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerInterceptor;
+
+/**
+ * 认证拦截器
+ * 校验请求是否携带有效的 JWT 令牌
+ */
+@Component
+public class AuthInterceptor implements HandlerInterceptor {
+
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String BEARER_PREFIX = "Bearer ";
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        // 1. 从请求头中获取 Authorization
+        String authHeader = request.getHeader(AUTHORIZATION_HEADER);
+
+        // 2. 校验 Authorization 格式
+        if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
+            throw new BusinessException("请先登录");
+        }
+
+        // 3. 提取 Token
+        String token = authHeader.substring(BEARER_PREFIX.length());
+
+        // 4. 验证 Token 是否有效
+        if (!JWTUtil.isValid(token)) {
+            throw new BusinessException("登录已过期，请重新登录");
+        }
+
+        // 5. 获取 userId
+        Long userId = JWTUtil.getUserId(token);
+        if (userId == null) {
+            throw new BusinessException("无效的令牌");
+        }
+
+        // 6. 将 userId 存储到 ThreadLocal
+        UserContext.setUserId(userId);
+
+        return true;
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+        // 请求完成后清理 ThreadLocal，防止内存泄漏
+        UserContext.clear();
+    }
+}
