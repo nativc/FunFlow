@@ -9,3 +9,30 @@ spring:
       port: 6379
       password:
       database: 0
+
+  # Mail
+  mail:
+    host: smtp.163.com
+    port: 465
+    username: # 邮箱
+    password: # SMTP 授权码
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+
+  # MySQL
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url:
+    username:
+    password:
+
+# MyBatis
+mybatis:
+  type-aliases-package: com.nativc.funflow.entity
+  configuration:
+    map-underscore-to-camel-case: true

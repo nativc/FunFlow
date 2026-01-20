@@ -1,13 +1,14 @@
 package com.nativc.funflow.controller;
 
 
+import com.nativc.funflow.common.Code;
 import com.nativc.funflow.common.Result;
+import com.nativc.funflow.dto.request.SendEmailCodeRequest;
 import com.nativc.funflow.dto.response.CaptchaResponse;
 import com.nativc.funflow.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 /**
@@ -30,5 +31,18 @@ public class AuthController {
     public Result<CaptchaResponse> getCaptcha() {
         CaptchaResponse captcha = authService.generateCaptcha();
         return Result.success(captcha);
+    }
+
+    /**
+     * 发送邮箱验证码
+     *
+     * @param request 发送邮箱验证码请求
+     * @return 结果
+     */
+    @PostMapping("/send-email-code")
+    public Result<Void> sendEmailCode(@Valid @RequestBody SendEmailCodeRequest request) {
+        // authService.sendEmailCode(request);
+        // return Result.success();
+        return Result.error(Code.SERVICE_UNAVAILABLE, "服务暂时不可用，请稍后重试！");
     }
 }

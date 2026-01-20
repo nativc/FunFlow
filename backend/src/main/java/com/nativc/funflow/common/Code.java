@@ -21,4 +21,14 @@ public class Code {
      * 系统异常
      */
     public static final int SYSTEM_ERROR = 40002;
+
+    /**
+     * 请求参数格式错误
+     */
+    public static final int VALIDATION_ERROR = 40003;
+
+    /**
+     * 服务不可用
+     */
+    public static final int SERVICE_UNAVAILABLE = 40005;
 }
