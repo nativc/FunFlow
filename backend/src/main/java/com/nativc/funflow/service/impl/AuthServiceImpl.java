@@ -6,14 +6,17 @@ import cn.hutool.crypto.digest.BCrypt;
 import com.google.code.kaptcha.impl.DefaultKaptcha;
 import com.nativc.funflow.common.Code;
 import com.nativc.funflow.common.RedisConstant;
+import com.nativc.funflow.dto.request.LoginRequest;
 import com.nativc.funflow.dto.request.RegisterRequest;
 import com.nativc.funflow.dto.request.SendEmailCodeRequest;
 import com.nativc.funflow.dto.response.CaptchaResponse;
+import com.nativc.funflow.dto.response.LoginResponse;
 import com.nativc.funflow.entity.User;
 import com.nativc.funflow.exception.BusinessException;
 import com.nativc.funflow.mapper.UserMapper;
 import com.nativc.funflow.service.AuthService;
 import com.nativc.funflow.service.EmailService;
+import com.nativc.funflow.util.JWTUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -235,5 +238,44 @@ public class AuthServiceImpl implements AuthService {
             return email.substring(0, atIndex);
         }
         throw new BusinessException(Code.ERROR, "邮箱格式不正确");
+    }
+
+    @Override
+    public LoginResponse login(LoginRequest request) {
+        String email = request.getEmail().toLowerCase();
+        String password = request.getPassword();
+        String captchaId = request.getCaptchaId();
+        String captchaText = request.getCaptchaText();
+
+        // 1. 校验图形验证码
+        validateCaptcha(captchaId, captchaText);
+
+        // 2. 根据邮箱查询用户
+        User user = userMapper.findByEmail(email);
+        if (user == null) {
+            throw new BusinessException("邮箱或密码错误");
+        }
+
+        // 3. 校验密码
+        if (!BCrypt.checkpw(password, user.getPasswordHash())) {
+            throw new BusinessException("邮箱或密码错误");
+        }
+
+        // 4. 校验账号状态
+        if (User.Status.BANNED.getCode().equals(user.getStatus())) {
+            throw new BusinessException("账号已被封禁，请联系客服");
+        }
+        if (User.Status.DELETED.getCode().equals(user.getStatus())) {
+            throw new BusinessException("账号已注销");
+        }
+
+        // 5. 更新最后登录时间
+        userMapper.updateLastLoginTime(user.getUserId());
+
+        // 6. 生成 JWT 令牌
+        String accessToken = JWTUtil.generateToken(user.getUserId());
+
+        log.info("用户登录成功，userId: {}, email: {}", user.getUserId(), email);
+        return new LoginResponse(accessToken);
     }
 }

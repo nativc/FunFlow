@@ -1,8 +1,10 @@
 package com.nativc.funflow.service;
 
+import com.nativc.funflow.dto.request.LoginRequest;
 import com.nativc.funflow.dto.request.RegisterRequest;
 import com.nativc.funflow.dto.request.SendEmailCodeRequest;
 import com.nativc.funflow.dto.response.CaptchaResponse;
+import com.nativc.funflow.dto.response.LoginResponse;
 import jakarta.validation.Valid;
 
 public interface AuthService {
@@ -27,4 +29,12 @@ public interface AuthService {
      * @param request 注册请求
      */
     void register(@Valid RegisterRequest request);
+
+    /**
+     * 用户登录
+     *
+     * @param request 登录请求
+     * @return 登录响应（包含 accessToken）
+     */
+    LoginResponse login(@Valid LoginRequest request);
 }

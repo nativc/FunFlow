@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface UserMapper {
@@ -20,6 +21,15 @@ public interface UserMapper {
     int countByEmail(@Param("email") String email);
 
     /**
+     * 根据邮箱查询用户
+     *
+     * @param email 邮箱地址（小写）
+     * @return 用户实体
+     */
+    @Select("SELECT user_id, password_hash, status FROM `users` WHERE email = #{email}")
+    User findByEmail(@Param("email") String email);
+
+    /**
      * 插入新用户
      *
      * @param user 用户实体
@@ -29,4 +39,12 @@ public interface UserMapper {
             "VALUES (#{email}, #{passwordHash}, #{username}, #{nickname}, #{status})")
     @Options(useGeneratedKeys = true, keyProperty = "userId", keyColumn = "user_id")
     int insert(User user);
+
+    /**
+     * 更新最后登录时间
+     *
+     * @param userId 用户ID
+     */
+    @Update("UPDATE `users` SET last_login_at = NOW() WHERE user_id = #{userId}")
+    void updateLastLoginTime(@Param("userId") Long userId);
 }
