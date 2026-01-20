@@ -8,7 +8,7 @@
 - 账号状态信息：创建时间、最后登录时间、状态（正常、禁用等）
 
 **字段说明：**
-- 邮箱、账号：唯一性约束，数据库查询时忽略大小写
+- 邮箱、账号：唯一性约束，邮箱在数据库中转小写存储，账号查询时忽略大小写
 - 密码：存储密码哈希，保证安全性
 - 关注数、粉丝数：作为冗余字段存储在用户表中，方便快速查询；通过事务保证数据一致性
 - 获赞量：基于更新效率考量，用户表存储的是缓存值，通过定时任务进行字段更新
@@ -25,7 +25,7 @@ CREATE TABLE `users` (
   `user_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '用户唯一ID',
   
   -- 账号凭证字段
-  `email` VARCHAR(255) NOT NULL COMMENT '邮箱（查询时忽略大小写）',
+  `email` VARCHAR(255) NOT NULL COMMENT '邮箱（转小写存储）',
   `password_hash` CHAR(60) NOT NULL COMMENT '密码哈希值（如 bcrypt）',
   `username` VARCHAR(64) NOT NULL COMMENT '账号（唯一性标识，查询时忽略大小写）',
   
