@@ -25,7 +25,8 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         // 2. 校验 Authorization 格式
         if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
-            throw new BusinessException("请先登录");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return false;
         }
 
         // 3. 提取 Token
@@ -33,13 +34,15 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         // 4. 验证 Token 是否有效
         if (!JWTUtil.isValid(token)) {
-            throw new BusinessException("登录已过期，请重新登录");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return false;
         }
 
         // 5. 获取 userId
         Long userId = JWTUtil.getUserId(token);
         if (userId == null) {
-            throw new BusinessException("无效的令牌");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return false;
         }
 
         // 6. 将 userId 存储到 ThreadLocal
