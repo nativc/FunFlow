@@ -31,4 +31,14 @@ public class Code {
      * 服务不可用
      */
     public static final int SERVICE_UNAVAILABLE = 40005;
+
+    /**
+     * 未授权（未登录或登录过期）
+     */
+    public static final int UNAUTHORIZED = 401;
+
+    /**
+     * 资源不存在
+     */
+    public static final int NOT_FOUND = 404;
 }
