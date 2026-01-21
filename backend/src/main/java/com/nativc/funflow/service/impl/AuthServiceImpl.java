@@ -214,12 +214,15 @@ public class AuthServiceImpl implements AuthService {
      * @param password 明文密码
      */
     private void createUser(String email, String password) {
-        User user = new User();
-        user.setEmail(email);
-        user.setPasswordHash(BCrypt.hashpw(password)); // 密码加密
-        user.setUsername(email); // 用户名默认使用邮箱
-        user.setNickname(extractNameFromEmail(email)); // 昵称从邮箱中提取
-        user.setStatus(User.Status.NORMAL.getCode());
+        User user = User.builder()
+                .email(email)
+                .passwordHash(BCrypt.hashpw(password))  // 密码加密
+                .username(email)    // 用户名默认使用邮箱
+                .nickname(extractNameFromEmail(email))  // 昵称从邮箱中提取
+                .avatarUrl("")
+                .bio("")
+                .status(User.Status.NORMAL.getCode())
+                .build();
 
         userMapper.insert(user);
         log.info("用户注册成功，邮箱: {}", email);

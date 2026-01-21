@@ -35,8 +35,8 @@ public interface UserMapper {
      * @param user 用户实体
      * @return 影响的行数
      */
-    @Insert("INSERT INTO `users` (email, password_hash, username, nickname, status) " +
-            "VALUES (#{email}, #{passwordHash}, #{username}, #{nickname}, #{status})")
+    @Insert("INSERT INTO `users` (email, password_hash, username, nickname, avatar_url, bio, status) " +
+            "VALUES (#{email}, #{passwordHash}, #{username}, #{nickname}, #{avatarUrl}, #{bio}, #{status})")
     @Options(useGeneratedKeys = true, keyProperty = "userId", keyColumn = "user_id")
     int insert(User user);
 

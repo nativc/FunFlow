@@ -30,9 +30,9 @@ CREATE TABLE `users` (
   `username` VARCHAR(64) NOT NULL COMMENT '账号（唯一性标识，查询时忽略大小写）',
   
   -- 个人主页展示字段
-  `avatar_url` VARCHAR(512) DEFAULT NULL COMMENT '头像URL',
+  `avatar_url` VARCHAR(512) NOT NULL COMMENT '头像URL',
   `nickname` VARCHAR(64) NOT NULL COMMENT '昵称',
-  `bio` TEXT DEFAULT NULL COMMENT '个人简介',
+  `bio` TEXT NOT NULL COMMENT '个人简介',
   
   -- 统计字段（用于快速展示）
   `following_count` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '关注数',
