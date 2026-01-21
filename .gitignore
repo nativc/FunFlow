@@ -6,7 +6,12 @@
 
 # Output
 target/
+dist/
 
 # Spring Boot
 application-dev.yml
 application-prod.yml
+
+# Node.js
+node_modules/
+package-lock.json
