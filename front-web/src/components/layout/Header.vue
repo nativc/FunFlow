@@ -25,7 +25,7 @@
 
     <div class="header-right">
       <!-- 未登录状态 -->
-      <button v-if="!userStore.isLoggedIn" class="login-btn" @click="showAuthDialog = true">
+      <button v-if="!userStore.isLoggedIn" class="login-btn" @click="emit('openAuth')">
         登录
       </button>
       <!-- 已登录状态 -->
@@ -51,9 +51,6 @@
         </el-dropdown>
       </div>
     </div>
-
-    <!-- 登录/注册弹窗 -->
-    <AuthDialog v-model="showAuthDialog" />
   </header>
 </template>
 
@@ -61,11 +58,16 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
-import AuthDialog from '@/components/common/AuthDialog.vue'
+
+// 定义 emits
+interface Emits {
+  (e: 'openAuth'): void
+}
+
+const emit = defineEmits<Emits>()
 
 const userStore = useUserStore()
 const searchQuery = ref('')
-const showAuthDialog = ref(false)
 
 // 默认头像（使用 Element Plus 的默认头像）
 const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'

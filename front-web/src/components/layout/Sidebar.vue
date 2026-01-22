@@ -29,8 +29,17 @@
 <script setup lang="ts">
 import { ref, h } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
+
+// 定义 emits
+interface Emits {
+  (e: 'requireAuth'): void
+}
+
+const emit = defineEmits<Emits>()
 
 // 定义菜单项类型
 interface MenuItem {
@@ -38,6 +47,7 @@ interface MenuItem {
   label: string
   icon: any
   path: string
+  requireAuth?: boolean
 }
 
 // 图标组件
@@ -122,15 +132,22 @@ const menuItems: MenuItem[] = [
 ]
 
 const bottomMenuItems: MenuItem[] = [
-  { key: 'following', label: '关注', icon: HeartIcon, path: '/following' },
-  { key: 'profile', label: '我的', icon: UserIcon, path: '/profile' },
-  { key: 'create', label: '创作', icon: PlusIcon, path: '/create' }
+  { key: 'following', label: '关注', icon: HeartIcon, path: '/following', requireAuth: true },
+  { key: 'profile', label: '我的', icon: UserIcon, path: '/profile', requireAuth: true },
+  { key: 'create', label: '创作', icon: PlusIcon, path: '/create', requireAuth: true }
 ]
 
 const activeKey = ref('hot')
 
 const handleMenuClick = (item: MenuItem) => {
   activeKey.value = item.key
+
+  // 检查是否需要登录
+  if (item.requireAuth && !userStore.isLoggedIn) {
+    emit('requireAuth')
+  }
+
+  // 无论如何都进行路由跳转
   router.push(item.path)
 }
 </script>
@@ -145,6 +162,7 @@ const handleMenuClick = (item: MenuItem) => {
   position: fixed;
   top: 64px;
   left: 0;
+  z-index: 900;
 }
 
 .nav-menu {

@@ -4,6 +4,12 @@
     :title="isLogin ? '登录' : '注册'"
     width="420px"
     :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    :show-close="showCancel"
+    :modal="false"
+    :append-to-body="true"
+    :z-index="700"
+    class="auth-non-modal-dialog"
     @close="handleClose"
   >
     <!-- 登录表单 -->
@@ -151,13 +157,16 @@ import { useUserStore } from '@/stores/user'
 
 interface Props {
   modelValue: boolean
+  showCancel?: boolean
 }
 
 interface Emits {
   (e: 'update:modelValue', value: boolean): void
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  showCancel: true
+})
 const emit = defineEmits<Emits>()
 
 const userStore = useUserStore()
@@ -474,5 +483,51 @@ watch(() => props.modelValue, (newVal) => {
 
 .dialog-footer :deep(.el-button--link) {
   margin-left: auto;
+}
+</style>
+
+<style>
+/* 全局样式 - 覆盖 Element Plus 的 Dialog overlay 行为 */
+/* 让 overlay 层透明且不阻挡点击，这样用户可以在弹窗打开时点击导航 */
+
+/* Element Plus Dialog 的 overlay 容器 - 让它不阻挡点击 */
+.el-overlay {
+  pointer-events: none !important;
+  background-color: transparent !important;
+}
+
+.el-overlay-dialog {
+  pointer-events: none !important;
+  background-color: transparent !important;
+}
+
+/* 弹窗的包装器也不阻挡点击 */
+.el-dialog__wrapper {
+  pointer-events: none !important;
+}
+
+/* 只有弹窗本身和其内容可以交互 */
+.el-dialog {
+  pointer-events: auto !important;
+}
+
+.el-dialog__body {
+  pointer-events: auto !important;
+}
+
+.el-dialog__header {
+  pointer-events: auto !important;
+}
+
+.el-dialog__footer {
+  pointer-events: auto !important;
+}
+
+/* 确保弹窗内的所有交互元素都可以点击 */
+.el-dialog .el-form,
+.el-dialog .el-input,
+.el-dialog .el-button,
+.el-dialog .el-form-item {
+  pointer-events: auto !important;
 }
 </style>
