@@ -4,7 +4,7 @@
     <div class="layout-container">
       <Sidebar @requireAuth="handleRequireAuth" />
       <main class="main-content">
-        <router-view />
+        <router-view @requireAuth="handleRequireAuth" />
       </main>
     </div>
     <AuthDialog v-model="authDialogVisible" :show-cancel="!isForceLogin" />
@@ -12,8 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import Header from './Header.vue'
 import Sidebar from './Sidebar.vue'
@@ -29,7 +28,18 @@ const authDialogVisible = ref(false)
 // 是否为强制登录模式（访问需要登录的页面时为 true，主动点击登录按钮时为 false）
 const isForceLogin = ref(false)
 
-// 处理需要登录的事件（来自 Sidebar，访问需要登录的页面）
+// 定义需要登录的路由
+const authRequiredPaths = ['/following', '/profile', '/create']
+
+// 检查当前路由是否需要登录
+const checkAuthRequired = () => {
+  if (authRequiredPaths.includes(route.path) && !userStore.isLoggedIn) {
+    authDialogVisible.value = true
+    isForceLogin.value = true
+  }
+}
+
+// 处理需要登录的事件（来自 Sidebar 或 FollowingView，访问需要登录的页面）
 const handleRequireAuth = () => {
   authDialogVisible.value = true
   isForceLogin.value = true  // 强制登录模式，无关闭按钮
@@ -52,6 +62,11 @@ watch(() => route.path, (newPath) => {
     authDialogVisible.value = false
     isForceLogin.value = false  // 重置强制登录模式
   }
+})
+
+// 组件挂载时检查当前路由是否需要登录（处理页面刷新的情况）
+onMounted(() => {
+  checkAuthRequired()
 })
 </script>
 

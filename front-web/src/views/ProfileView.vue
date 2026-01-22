@@ -7,9 +7,24 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
+
+// 检查登录状态的 emit
+interface Emits {
+  (e: 'requireAuth'): void
+}
+
+const emit = defineEmits<Emits>()
+
+// 组件挂载时检查登录状态
+onMounted(() => {
+  if (!userStore.isLoggedIn) {
+    emit('requireAuth')
+  }
+})
 </script>
 
 <style scoped>
