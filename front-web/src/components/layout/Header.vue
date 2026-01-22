@@ -56,6 +56,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
 
@@ -66,6 +67,7 @@ interface Emits {
 
 const emit = defineEmits<Emits>()
 
+const router = useRouter()
 const userStore = useUserStore()
 const searchQuery = ref('')
 
@@ -122,6 +124,8 @@ const handleCommand = (command: string) => {
 const handleLogout = () => {
   userStore.logout()
   ElMessage.success('已退出登录')
+  // 跳转到首页推荐页面
+  router.push({ name: 'home' })
 }
 </script>
 

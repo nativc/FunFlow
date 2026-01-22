@@ -27,11 +27,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, h } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, h, watch, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
 // 定义 emits
@@ -138,6 +139,23 @@ const bottomMenuItems: MenuItem[] = [
 ]
 
 const activeKey = ref('hot')
+
+// 根据路由路径获取对应的菜单 key
+const getKeyByPath = (path: string): string => {
+  const allMenuItems = [...menuItems, ...bottomMenuItems]
+  const item = allMenuItems.find(item => item.path === path)
+  return item?.key || 'home'
+}
+
+// 初始化 activeKey
+onMounted(() => {
+  activeKey.value = getKeyByPath(route.path)
+})
+
+// 监听路由变化，更新 activeKey
+watch(() => route.path, (newPath) => {
+  activeKey.value = getKeyByPath(newPath)
+})
 
 const handleMenuClick = (item: MenuItem) => {
   activeKey.value = item.key
