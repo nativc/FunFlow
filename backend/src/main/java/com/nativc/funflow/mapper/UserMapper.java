@@ -58,4 +58,33 @@ public interface UserMapper {
             "following_count, follower_count, cached_total_likes_received " +
             "FROM `users` WHERE user_id = #{userId}")
     User findById(@Param("userId") Long userId);
+
+    /**
+     * 检查 username 是否被其他用户占用（忽略大小写）
+     *
+     * @param username 账号
+     * @param userId   当前用户ID（排除自己）
+     * @return 占用该 username 的用户数量
+     */
+    @Select("SELECT COUNT(1) FROM `users` WHERE LOWER(username) = LOWER(#{username}) AND user_id != #{userId}")
+    int countByUsernameExcludingSelf(@Param("username") String username, @Param("userId") Long userId);
+
+    /**
+     * 更新用户资料
+     * 使用动态 SQL，只更新非空字段
+     *
+     * @param user 用户实体（包含 userId 和需要更新的字段）
+     * @return 影响的行数
+     */
+    @Update("<script>" +
+            "UPDATE `users` " +
+            "<set>" +
+            "  <if test='username != null'>username = #{username},</if>" +
+            "  <if test='nickname != null'>nickname = #{nickname},</if>" +
+            "  <if test='avatarUrl != null'>avatar_url = #{avatarUrl},</if>" +
+            "  <if test='bio != null'>bio = #{bio},</if>" +
+            "</set>" +
+            "WHERE user_id = #{userId}" +
+            "</script>")
+    int updateProfile(User user);
 }

@@ -1,9 +1,11 @@
 package com.nativc.funflow.controller;
 
 import com.nativc.funflow.common.Result;
+import com.nativc.funflow.dto.request.UpdateProfileRequest;
 import com.nativc.funflow.dto.response.AvatarUploadResponse;
 import com.nativc.funflow.dto.response.UserProfileResponse;
 import com.nativc.funflow.service.UserService;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -43,5 +45,17 @@ public class UserController {
     public Result<AvatarUploadResponse> uploadAvatar(@RequestParam("file") MultipartFile file) {
         String avatarUrl = userService.uploadAvatar(file);
         return Result.success(new AvatarUploadResponse(avatarUrl));
+    }
+
+    /**
+     * 更新当前登录用户的个人资料
+     *
+     * @param request 更新请求
+     * @return 更新后的用户资料
+     */
+    @PostMapping("/profile")
+    public Result<UserProfileResponse> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
+        UserProfileResponse profile = userService.updateProfile(request);
+        return Result.success(profile);
     }
 }

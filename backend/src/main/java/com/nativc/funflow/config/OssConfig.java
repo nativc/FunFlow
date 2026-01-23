@@ -47,4 +47,14 @@ public class OssConfig {
     public OSS ossClient() {
         return new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
     }
+
+    /**
+     * 获取 OSS 完整 URL 前缀
+     * 格式：https://{bucketName}.{endpoint}/{basePath}
+     *
+     * @return OSS URL 前缀
+     */
+    public String getOssUrlPrefix() {
+        return "https://" + bucketName + "." + endpoint + "/" + basePath;
+    }
 }
