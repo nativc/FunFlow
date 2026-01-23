@@ -2,6 +2,13 @@ spring:
   profiles:
     active: dev
 
+  # 文件上传配置
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB  # 单个文件最大 5MB
+      max-request-size: 10MB  # 请求最大 10MB
+
   # Redis
   data:
     redis:
@@ -41,3 +48,12 @@ mybatis:
 jwt:
   secret-key: funflow-jwt-secret-key-change-in-production
   expire-time: 604800000  # 7天 = 7 * 24 * 60 * 60 * 1000
+
+# 阿里云 OSS
+aliyun:
+  oss:
+    endpoint:  # OSS 域名，不包含 https:// 前缀
+    access-key-id: # 你的 AccessKeyId
+    access-key-secret: # 你的 AccessKeySecret
+    bucket-name: # 你的 Bucket 名称
+    base-path: funflow/  # 文件存储路径前缀
