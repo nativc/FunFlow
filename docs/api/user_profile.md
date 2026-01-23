@@ -112,7 +112,26 @@
 }
 ```
 
+**响应示例：**
+```json
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "userId": 10001,
+    "username": "john_doe_2025",
+    "nickname": "John Doe",
+    "avatarUrl": "https://your-bucket.oss-cn-hangzhou.aliyuncs.com/user/avatar/12345/1a2b3c.jpg",
+    "bio": "热爱生活，喜欢分享，记录美好瞬间",
+    "followingCount": 128,
+    "followerCount": 1024,
+    "likesReceived": 8888
+  }
+}
+```
+
 **注意事项：**
 - 所有字段均为可选，只传需要更新的字段即可
 - 修改账号时会进行唯一性校验（忽略大小写）
+- 头像 URL 必须是通过头像上传接口获取的 OSS 地址，且必须是当前用户自己的头像路径（格式：`user/avatar/{userId}/xxx`），不允许使用其他用户的头像或外部图片链接
 - 头像和个性签名可能需要经过内容审核，审核通过后才生效（当前版本暂不支持审核，直接更新）
