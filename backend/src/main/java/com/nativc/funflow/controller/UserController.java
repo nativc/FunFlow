@@ -44,6 +44,7 @@ public class UserController {
     @PostMapping("/profile/avatar")
     public Result<AvatarUploadResponse> uploadAvatar(@RequestParam("file") MultipartFile file) {
         String avatarUrl = userService.uploadAvatar(file);
+        log.info("头像上传成功：{}", avatarUrl);
         return Result.success(new AvatarUploadResponse(avatarUrl));
     }
 
