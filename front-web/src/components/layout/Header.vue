@@ -40,8 +40,8 @@
           </div>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="settings">
-                <span>设置</span>
+              <el-dropdown-item command="editProfile">
+                <span>编辑资料</span>
               </el-dropdown-item>
               <el-dropdown-item divided command="logout">
                 <span>退出登录</span>
@@ -51,6 +51,9 @@
         </el-dropdown>
       </div>
     </div>
+
+    <!-- 编辑资料弹窗 -->
+    <EditProfileDialog v-model="showEditDialog" />
   </header>
 </template>
 
@@ -59,6 +62,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
+import EditProfileDialog from '@/components/common/EditProfileDialog.vue'
 
 // 定义 emits
 interface Emits {
@@ -70,6 +74,9 @@ const emit = defineEmits<Emits>()
 const router = useRouter()
 const userStore = useUserStore()
 const searchQuery = ref('')
+
+// 编辑资料弹窗
+const showEditDialog = ref(false)
 
 // 默认头像（使用 Element Plus 的默认头像）
 const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
@@ -112,8 +119,8 @@ const handleSearch = () => {
 // 处理下拉菜单命令
 const handleCommand = (command: string) => {
   switch (command) {
-    case 'settings':
-      ElMessage.info('设置功能开发中...')
+    case 'editProfile':
+      showEditDialog.value = true
       break
     case 'logout':
       handleLogout()

@@ -33,7 +33,7 @@
             <p class="bio-content">{{ userStore.userProfile?.bio || '这个人很懒，还没有填写个性签名~' }}</p>
           </div>
 
-          <button class="edit-profile-btn">编辑资料</button>
+          <button class="edit-profile-btn" @click="showEditDialog = true">编辑资料</button>
         </div>
       </div>
 
@@ -126,12 +126,16 @@
     </div>
   </div>
   <div v-else class="empty-view"></div>
+
+  <!-- 编辑资料弹窗 -->
+  <EditProfileDialog v-model="showEditDialog" />
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, watch, onActivated } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import EditProfileDialog from '@/components/common/EditProfileDialog.vue'
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -145,6 +149,9 @@ interface Emits {
 }
 
 const emit = defineEmits<Emits>()
+
+// 编辑资料弹窗
+const showEditDialog = ref(false)
 
 // 标签页配置
 const tabs = [
