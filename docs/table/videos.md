@@ -26,12 +26,14 @@
 - `comment_count` (INT)，评论数，默认 0
 
 **状态控制字段**
-- `status` (TINYINT)，视频状态
+- `is_public` (TINYINT)，是否公开，默认 1
+  - 0: 私密
+  - 1: 公开
+- `status` (TINYINT)，审核状态，默认 0
   - 0: 审核中
-  - 1: 已发布-公开
-  - 2: 已发布-私密
-  - 3: 已下架
-  - 4: 违规
+  - 1: 已发布
+  - 2: 已下架
+  - 3: 违规
 
 **审核相关字段**
 - `audit_time` (TIMESTAMP)，审核时间，可为空
@@ -58,7 +60,8 @@ CREATE TABLE `videos` (
   `like_count` INT NOT NULL DEFAULT 0 COMMENT '点赞量',
   `collect_count` INT NOT NULL DEFAULT 0 COMMENT '收藏数',
   `comment_count` INT NOT NULL DEFAULT 0 COMMENT '评论数',
-  `status` TINYINT NOT NULL DEFAULT 0 COMMENT '视频状态：0-审核中，1-已发布公开，2-已发布私密，3-已下架，4-违规',
+  `is_public` TINYINT NOT NULL DEFAULT 1 COMMENT '是否公开：0-私密，1-公开',
+  `status` TINYINT NOT NULL DEFAULT 0 COMMENT '审核状态：0-审核中，1-已发布，2-已下架，3-违规',
   `audit_time` TIMESTAMP NULL DEFAULT NULL COMMENT '审核时间',
   `audit_reason` VARCHAR(500) DEFAULT NULL COMMENT '审核备注/拒绝原因',
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -135,8 +138,8 @@ CREATE TABLE `tags` (
 
 1. **视频发布流程**：
    - 用户上传视频后，状态为"审核中"（status=0）
-   - 审核通过后，根据用户选择设置为"已发布-公开"（status=1）或"已发布-私密"（status=2）
-   - 审核不通过则标记为"违规"（status=4）
+   - 审核通过后，状态更新为"已发布"（status=1）
+   - 审核不通过则标记为"违规"（status=3）
 
 2. **标签管理**：
    - 标签由系统预设或用户首次使用时自动创建
