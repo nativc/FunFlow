@@ -17,7 +17,7 @@
 - `user_id` (BIGINT)，上传用户的 ID，外键关联 users 表
 - `video_url` (VARCHAR(512))，视频文件 URL
 - `cover_url` (VARCHAR(512))，视频封面图片 URL，可为空
-- `title` (VARCHAR(100))，视频标题（文案）
+- `title` (VARCHAR(300))，视频标题（文案）
 
 **互动数据字段**（冗余字段，提升查询性能）
 - `view_count` (INT)，播放量，默认 0
@@ -53,7 +53,7 @@ CREATE TABLE `videos` (
   `user_id` BIGINT NOT NULL COMMENT '上传用户的ID',
   `video_url` VARCHAR(512) NOT NULL COMMENT '视频文件URL',
   `cover_url` VARCHAR(512) DEFAULT NULL COMMENT '视频封面图片URL',
-  `title` VARCHAR(100) NOT NULL COMMENT '视频标题（文案）',
+  `title` VARCHAR(300) NOT NULL COMMENT '视频标题（文案）',
   `view_count` INT NOT NULL DEFAULT 0 COMMENT '播放量',
   `like_count` INT NOT NULL DEFAULT 0 COMMENT '点赞量',
   `collect_count` INT NOT NULL DEFAULT 0 COMMENT '收藏数',
