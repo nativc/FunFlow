@@ -13,7 +13,7 @@
 ### videos 表
 
 **基本信息字段**
-- `id` (BIGINT)，视频唯一标识，主键
+- `video_id` (BIGINT)，视频唯一标识，主键
 - `user_id` (BIGINT)，上传用户的 ID，外键关联 users 表
 - `video_url` (VARCHAR(512))，视频文件 URL
 - `cover_url` (VARCHAR(512))，视频封面图片 URL，可为空
@@ -45,13 +45,13 @@
 - `deleted_at` (TIMESTAMP)，软删除时间，可为空
 
 **索引设计**
-- PRIMARY KEY (`id`)
+- PRIMARY KEY (`video_id`)
 - INDEX `idx_user_status` (`user_id`, `status`)
 
 **SQL 创建语句**
 ```sql
 CREATE TABLE `videos` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '视频唯一标识',
+  `video_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '视频唯一标识',
   `user_id` BIGINT NOT NULL COMMENT '上传用户的ID',
   `video_url` VARCHAR(512) NOT NULL COMMENT '视频文件URL',
   `cover_url` VARCHAR(512) DEFAULT NULL COMMENT '视频封面图片URL',
@@ -67,7 +67,7 @@ CREATE TABLE `videos` (
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `deleted_at` TIMESTAMP NULL DEFAULT NULL COMMENT '软删除时间',
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`video_id`),
   INDEX `idx_user_status` (`user_id`, `status`),
   INDEX `idx_created_at` (`created_at`),
   INDEX `idx_deleted_at` (`deleted_at`)
@@ -79,13 +79,13 @@ CREATE TABLE `videos` (
 用于实现视频与标签的多对多关系，支持高效的标签查询和统计。
 
 **字段设计**
-- `id` (BIGINT)，关联记录唯一标识，主键
+- `video_tag_id` (BIGINT)，关联记录唯一标识，主键
 - `video_id` (BIGINT)，视频 ID，外键关联 videos 表
 - `tag_id` (BIGINT)，标签 ID，外键关联 tags 表
 - `created_at` (TIMESTAMP)，创建时间，默认当前时间
 
 **索引设计**
-- PRIMARY KEY (`id`)
+- PRIMARY KEY (`video_tag_id`)
 - UNIQUE INDEX `uk_video_tag` (`video_id`, `tag_id`) -- 防止重复关联
 - INDEX `idx_tag_id` (`tag_id`) -- 用于按标签查询视频
 
@@ -96,11 +96,11 @@ CREATE TABLE `videos` (
 **SQL 创建语句**
 ```sql
 CREATE TABLE `video_tags` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '关联记录唯一标识',
+  `video_tag_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '关联记录唯一标识',
   `video_id` BIGINT NOT NULL COMMENT '视频ID',
   `tag_id` BIGINT NOT NULL COMMENT '标签ID',
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`video_tag_id`),
   UNIQUE INDEX `uk_video_tag` (`video_id`, `tag_id`),
   INDEX `idx_tag_id` (`tag_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='视频标签关联表';
@@ -111,24 +111,24 @@ CREATE TABLE `video_tags` (
 管理系统中所有的标签信息。
 
 **字段设计**
-- `id` (BIGINT)，标签唯一标识，主键
+- `tag_id` (BIGINT)，标签唯一标识，主键
 - `tag_name` (VARCHAR(50))，标签名称，唯一
 - `use_count` (INT)，使用次数，默认 0（冗余字段，用于热门标签统计）
 - `created_at` (TIMESTAMP)，创建时间，默认当前时间
 
 **索引设计**
-- PRIMARY KEY (`id`)
+- PRIMARY KEY (`tag_id`)
 - UNIQUE INDEX `uk_tag_name` (`tag_name`)
 - INDEX `idx_use_count` (`use_count`) -- 用于热门标签排序
 
 **SQL 创建语句**
 ```sql
 CREATE TABLE `tags` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '标签唯一标识',
+  `tag_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '标签唯一标识',
   `tag_name` VARCHAR(50) NOT NULL COMMENT '标签名称',
   `use_count` INT NOT NULL DEFAULT 0 COMMENT '使用次数（冗余字段，用于热门标签统计）',
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (`tag_id`),
   UNIQUE INDEX `uk_tag_name` (`tag_name`),
   INDEX `idx_use_count` (`use_count`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='标签字典表';
