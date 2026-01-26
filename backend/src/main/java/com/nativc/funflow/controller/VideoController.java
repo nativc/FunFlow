@@ -2,6 +2,7 @@ package com.nativc.funflow.controller;
 
 import com.nativc.funflow.common.Result;
 import com.nativc.funflow.dto.request.CreateVideoRequest;
+import com.nativc.funflow.dto.response.UserVideosResponse;
 import com.nativc.funflow.exception.BusinessException;
 import com.nativc.funflow.service.VideoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,5 +49,21 @@ public class VideoController {
         videoService.createVideo(request);
 
         return Result.success();
+    }
+
+    /**
+     * 获取当前用户作品列表
+     *
+     * @param page     页码，从1开始，默认1
+     * @param pageSize 每页数量，默认20，最大50
+     * @return 用户作品列表
+     */
+    @GetMapping
+    public Result<UserVideosResponse> getUserVideos(
+            @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "20") Integer pageSize) {
+
+        UserVideosResponse response = videoService.getUserVideos(page, pageSize);
+        return Result.success(response);
     }
 }

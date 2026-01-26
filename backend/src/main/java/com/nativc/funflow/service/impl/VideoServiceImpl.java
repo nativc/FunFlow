@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nativc.funflow.common.UserContext;
 import com.nativc.funflow.dto.request.CreateVideoRequest;
+import com.nativc.funflow.dto.response.UserVideosResponse;
+import com.nativc.funflow.dto.response.VideoItem;
 import com.nativc.funflow.entity.Tag;
 import com.nativc.funflow.entity.Video;
 import com.nativc.funflow.entity.VideoTag;
@@ -20,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -132,6 +136,68 @@ public class VideoServiceImpl implements VideoService {
             // 标签引用数 + 1
             tagMapper.incrementUseCount(tag.getTagId());
         }
+    }
+
+    @Override
+    public UserVideosResponse getUserVideos(Integer page, Integer pageSize) {
+        // 1. 获取当前用户ID
+        Long userId = UserContext.getUserId();
+        if (userId == null) {
+            throw new BusinessException("用户未登录");
+        }
+
+        // 2. 参数校验与默认值处理
+        if (page == null || page < 1) {
+            page = 1;
+        }
+        if (pageSize == null || pageSize < 1) {
+            pageSize = 20;
+        }
+        if (pageSize > 50) {
+            pageSize = 50;
+        }
+
+        // 3. 计算偏移量
+        int offset = (page - 1) * pageSize;
+
+        // 4. 查询用户视频总数
+        int total = videoMapper.countByUserId(userId);
+
+        // 5. 查询视频列表
+        List<Video> videos = videoMapper.findByUserIdWithPagination(userId, offset, pageSize);
+
+        // 6. 转换为响应DTO
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        List<VideoItem> videoItems = new ArrayList<>();
+
+        for (Video video : videos) {
+            // 查询视频标签
+            List<String> tags = videoTagMapper.findTagNamesByVideoId(video.getVideoId());
+
+            VideoItem item = VideoItem.builder()
+                    .videoId(video.getVideoId())
+                    .title(video.getTitle())
+                    .coverUrl(video.getCoverUrl())
+                    .videoUrl(video.getVideoUrl())
+                    .tags(tags)
+                    .viewCount(video.getViewCount())
+                    .likeCount(video.getLikeCount())
+                    .status(video.getStatus())
+                    .isPublic(video.getIsPublic())
+                    .createTime(video.getCreatedAt() != null ? video.getCreatedAt().format(formatter) : null)
+                    .build();
+
+            videoItems.add(item);
+        }
+
+        // 7. 构建响应
+        return UserVideosResponse.builder()
+                .userId(userId)
+                .total(total)
+                .page(page)
+                .pageSize(pageSize)
+                .videos(videoItems)
+                .build();
     }
 
     /**

@@ -3,6 +3,10 @@ package com.nativc.funflow.mapper;
 import com.nativc.funflow.entity.VideoTag;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * 视频标签关联数据访问接口
@@ -18,4 +22,15 @@ public interface VideoTagMapper {
      */
     @Insert("INSERT INTO `video_tags` (video_id, tag_id) VALUES (#{videoId}, #{tagId})")
     int insert(VideoTag videoTag);
+
+    /**
+     * 根据视频ID查询标签名称列表
+     *
+     * @param videoId 视频ID
+     * @return 标签名称列表
+     */
+    @Select("SELECT t.tag_name FROM `video_tags` vt " +
+            "JOIN `tags` t ON vt.tag_id = t.tag_id " +
+            "WHERE vt.video_id = #{videoId}")
+    List<String> findTagNamesByVideoId(@Param("videoId") Long videoId);
 }
