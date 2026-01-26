@@ -53,16 +53,57 @@
         <div class="video-content">
           <!-- 作品 -->
           <div v-if="activeTab === 'works'" class="video-grid">
-            <div v-for="i in 6" :key="i" class="video-item">
-              <div class="video-thumbnail">
-                <div class="video-stats-overlay">
-                  <span class="video-stat-item"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>{{ formatNumber(Math.floor(Math.random() * 1000)) }}</span>
-                  <span class="video-stat-item"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8 5v14l11-7z"/></svg>{{ formatNumber(Math.floor(Math.random() * 10000)) }}</span>
-                </div>
-              </div>
-              <p class="video-title">作品标题 {{ i }}</p>
+            <div v-if="isLoading && videos.length === 0" class="empty-state">
+              <p>加载中...</p>
             </div>
-            <div v-if="!hasWorks" class="empty-state">
+            <template v-else-if="videos.length > 0">
+              <div
+                v-for="video in videos"
+                :key="video.videoId"
+                class="video-item"
+              >
+                <div class="video-thumbnail">
+                  <img
+                    v-if="video.coverUrl"
+                    :src="video.coverUrl"
+                    :alt="video.title"
+                    class="thumbnail-image"
+                  />
+                  <div v-else class="video-placeholder">
+                    <video :src="video.videoUrl" class="video-preview" muted></video>
+                  </div>
+                  <div class="video-status-badge">
+                    {{ getVideoStatusText(video) }}
+                  </div>
+                  <div class="video-stats-overlay">
+                    <span class="video-stat-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                      </svg>
+                      {{ formatNumber(video.likeCount) }}
+                    </span>
+                    <span class="video-stat-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                      {{ formatNumber(video.viewCount) }}
+                    </span>
+                  </div>
+                </div>
+                <p class="video-title">{{ getVideoDescription(video) }}</p>
+              </div>
+              <!-- 加载更多按钮 -->
+              <div v-if="currentPage * pageSize < totalVideos" class="load-more-container">
+                <button
+                  class="load-more-btn"
+                  :disabled="isLoading"
+                  @click="loadMoreVideos"
+                >
+                  {{ isLoading ? '加载中...' : '加载更多' }}
+                </button>
+              </div>
+            </template>
+            <div v-else class="empty-state">
               <p>还没有发布作品</p>
               <button class="action-btn">去发布</button>
             </div>
@@ -136,6 +177,7 @@ import { ref, onMounted, watch, onActivated } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import EditProfileDialog from '@/components/common/EditProfileDialog.vue'
+import { getUserVideos, type Video } from '@/api/video'
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -163,6 +205,13 @@ const tabs = [
 
 const activeTab = ref('works')
 
+// 作品列表数据
+const videos = ref<Video[]>([])
+const totalVideos = ref(0)
+const currentPage = ref(1)
+const pageSize = ref(20)
+const isLoading = ref(false)
+
 // 数据状态（后续可以接入真实数据）
 const hasWorks = ref(false)
 const hasFavorites = ref(false)
@@ -179,6 +228,64 @@ const fetchUserInfo = async () => {
     } catch (error) {
       console.error('获取用户信息失败:', error)
     }
+  }
+}
+
+// 获取用户作品列表
+const fetchUserVideos = async () => {
+  if (isLoading.value) return
+
+  try {
+    isLoading.value = true
+    const response = await getUserVideos({
+      page: currentPage.value,
+      pageSize: pageSize.value
+    })
+
+    videos.value = response.videos
+    totalVideos.value = response.total
+    hasWorks.value = response.videos.length > 0
+
+    console.log('获取作品列表成功:', response)
+  } catch (error) {
+    console.error('获取作品列表失败:', error)
+    videos.value = []
+    totalVideos.value = 0
+    hasWorks.value = false
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// 获取视频状态文本
+const getVideoStatusText = (video: Video): string => {
+  const { status, isPublic } = video
+
+  if (status === 0) return '审核中'
+  if (status === 2) return '已下架'
+  if (status === 1) {
+    return isPublic === 1 ? '公开' : '私密'
+  }
+
+  return ''
+}
+
+// 获取视频描述（标题 + 标签）
+const getVideoDescription = (video: Video): string => {
+  const { title, tags } = video
+
+  if (!title || title.trim() === '') {
+    return tags.map(tag => `#${tag}`).join('')
+  }
+
+  return `${title} ${tags.map(tag => `#${tag}`).join('')}`
+}
+
+// 加载更多作品
+const loadMoreVideos = () => {
+  if (currentPage.value * pageSize.value < totalVideos.value) {
+    currentPage.value++
+    fetchUserVideos()
   }
 }
 
@@ -199,6 +306,7 @@ onMounted(() => {
     emit('requireAuth')
   } else {
     fetchUserInfo()
+    fetchUserVideos()
   }
 })
 
@@ -207,6 +315,7 @@ onActivated(() => {
   console.log('ProfileView onActivated')
   if (userStore.isLoggedIn) {
     fetchUserInfo()
+    fetchUserVideos()
   }
 })
 
@@ -215,6 +324,7 @@ watch(() => route.path, (newPath, oldPath) => {
   console.log('路由变化:', oldPath, '->', newPath)
   if (newPath === '/profile' && userStore.isLoggedIn) {
     fetchUserInfo()
+    fetchUserVideos()
   }
 })
 </script>
@@ -428,6 +538,71 @@ watch(() => route.path, (newPath, oldPath) => {
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 8px;
+}
+
+.thumbnail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.video-placeholder {
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-status-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+}
+
+.load-more-container {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.load-more-btn {
+  padding: 12px 32px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.load-more-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .video-stats-overlay {
