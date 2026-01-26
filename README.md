@@ -14,8 +14,10 @@ FunFlow 是一个短视频浏览与分享应用，致力于为用户提供流畅
 
 ## Previews
 
-<img src="figures/views/user-profile.png" alt="用户个人主页" style="display:inline; width:48%;" />
-<img src="figures/views/video-create.png" alt="视频上传页面" style="display:inline; width:48%;" />
+<div style="text-align:center;">
+  <img src="figures/views/user-profile.png" alt="用户个人主页" style="display:inline-block; width:48%;" />
+  <img src="figures/views/video-create.png" alt="视频上传页面" style="display:inline-block; width:48%;" />
+</div>
 
 > 示例视频来源：
 > - https://v.douyin.com/GBFijE9C5tU/
