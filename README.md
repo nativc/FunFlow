@@ -12,6 +12,16 @@ FunFlow 是一个短视频浏览与分享应用，致力于为用户提供流畅
 - **视频创作**：本地视频上传
 - **个人空间**：关注/粉丝列表、作品展示、收藏夹、喜欢列表、浏览历史
 
+## Previews
+
+<img src="figures/views/user-profile.png" alt="用户个人主页" style="display:inline; width:48%;" />
+<img src="figures/views/video-create.png" alt="视频上传页面" style="display:inline; width:48%;" />
+
+> 示例视频来源：
+> - https://v.douyin.com/GBFijE9C5tU/
+> - https://v.douyin.com/e5D1QMhDBxk/
+> - https://v.douyin.com/hP8p9ZWdp-o/
+
 ## License
 
 MIT License. See [License here](LICENSE) for details.
